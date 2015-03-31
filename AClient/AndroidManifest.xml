@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.test.develop"
+    package="com.shiz.model"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -8,14 +8,17 @@
         android:minSdkVersion="10"
         android:targetSdkVersion="21" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.hardware.camera"/>
 
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
+        android:name="ModelApplication"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="com.test.develop.MainActivity"
+            android:name="com.shiz.model.ui.ModelActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -23,6 +26,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name="com.shiz.model.ui.ShowTrackActvity"></activity>
+        <service android:name="com.shiz.model.track.PacketSendingService"></service>
     </application>
 
 </manifest>

@@ -6,6 +6,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 
+import com.shiz.model.ModelApplication;
+
 import android.os.AsyncTask;
 import android.util.Log;
 
@@ -15,25 +17,29 @@ import android.util.Log;
  *
  */
 public class ShowTrack extends AsyncTask<Void, Void, Void> {
-	private final String LOG_TAG = "client track";
+	private final String LOG_TAG = "Client track";
 	private final boolean DEBUG = true;
+	
 	private InetAddress address;
 	private DatagramSocket udpSocket;
-	private int serverPort = 19655;
+	private DatagramPacket sendPacket;
+	private int serverPort = ModelApplication.getInstance().getServerPort();
 	
 	public ShowTrack(InetAddress addr) {
 		if (DEBUG) Log.d(LOG_TAG, "Client track creation.");
 		address = addr;
 	}
+	
 	@Override
 	protected Void doInBackground(Void... params) {
 		try {
 			udpSocket = new DatagramSocket(serverPort);
-			DatagramPacket sendPacket = new DatagramPacket("show".getBytes(), "show".length(), 
+			sendPacket = new DatagramPacket("show".getBytes(), "show".length(), 
 					address, serverPort);
 			udpSocket.send(sendPacket);
-			udpSocket.close();				
-			for(int i = 0; i < 1000; i++) {
+			udpSocket.close();	
+			
+			for(int i = 0; i < 1; i++) {
 				udpSocket = new DatagramSocket(serverPort);
 				if (isCancelled()) {
 					sendPacket = new DatagramPacket("buy".getBytes(), "buy".length(), 
@@ -54,13 +60,13 @@ public class ShowTrack extends AsyncTask<Void, Void, Void> {
 				Thread.sleep(200);
 			}
 		} catch (SocketException e) {
-			if (DEBUG) Log.d(LOG_TAG, "Socket creation exception.");
+			if (DEBUG) Log.e(LOG_TAG, "Socket creation exception.");
 			e.printStackTrace();
 		} catch (IOException e) {
-			if (DEBUG) Log.d(LOG_TAG, "IOException");
+			if (DEBUG) Log.e(LOG_TAG, "IOException");
 			e.printStackTrace();
 		} catch (InterruptedException e) {
-			if (DEBUG) Log.d(LOG_TAG, "Thread.sleep() exception.");
+			if (DEBUG) Log.e(LOG_TAG, "Thread.sleep() exception.");
 			e.printStackTrace();
 		} finally {
 			udpSocket.close();

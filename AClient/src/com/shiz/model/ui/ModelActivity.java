@@ -1,4 +1,4 @@
-package com.test.develop;
+package com.shiz.model.ui;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -10,11 +10,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.SharedPreferences.Editor;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
@@ -26,10 +24,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.shiz.model.ModelApplication;
+import com.shiz.model.R;
 import com.shiz.model.track.ShowTrack;
 import com.shiz.model.track.ViewTrack;
 
-public class MainActivity extends ActionBarActivity implements OnClickListener {
+public class ModelActivity extends ActionBarActivity implements OnClickListener {
 	private final String LOG_TAG = "rtpClient";
 	
 	private Button startButton;
@@ -37,10 +37,6 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	private Button viewButton;
 	private EditText editText;
 	private TextView textView;
-	
-	private int serverPort = 19655;
-	private String address = "192.168.1.51";
-	private String login = "htc";
 	
 	private static int threadcount = 0;
 	private static int counter = 0;
@@ -61,12 +57,12 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		startButton = (Button) findViewById(R.id.button1);
 		transmitButton = (Button) findViewById(R.id.button2);
 		viewButton = (Button) findViewById(R.id.button3);
-		startButton.setOnClickListener(MainActivity.this);
+		startButton.setOnClickListener(ModelActivity.this);
 		transmitButton.setOnClickListener(this);
 		viewButton.setOnClickListener(this);
 		
 		editText = (EditText) findViewById(R.id.editText1);
-		editText.setText("192.168.1.43");
+		editText.setText("192.168.1.15");
 		
 		textView = (TextView) findViewById(R.id.textView1);
 	}	
@@ -93,7 +89,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	@Override
 	public void onClick(View v) {
 		if(editText != null) {
-			address = editText.getText().toString();
+			ModelApplication.getInstance().setServerAddress( 
+					editText.getText().toString());
 		}
 		
 		switch (v.getId()){
@@ -101,7 +98,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			Toast.makeText(this, "try to send", Toast.LENGTH_LONG).show();
 			String serverAnswer = "No";
 			try {
-				InetAddress addr = InetAddress.getByName(address);
+				InetAddress addr = InetAddress.getByName(ModelApplication.
+						getInstance().getServerAddress());
 				Log.d(LOG_TAG, addr.getHostAddress());
 				ConnectServer cs = new ConnectServer(addr);
 				cs.execute();
@@ -133,13 +131,15 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		case R.id.button2:
 			if (transmitButton.getText().equals("Transmit")) {
 				transmitButton.setText("Stop");
-				try {
-					InetAddress addr = InetAddress.getByName(address);
-					st = new ShowTrack(addr);
-					st.execute();
-				} catch (UnknownHostException e) {
-					e.printStackTrace();
-				}
+				Intent intent = new Intent(ModelActivity.this, ShowTrackActvity.class);
+			    startActivity(intent);
+//				try {
+//					InetAddress addr = InetAddress.getByName(address);
+//					st = new ShowTrack(addr);
+//					st.execute();
+//				} catch (UnknownHostException e) {
+//					e.printStackTrace();
+//				}
 			} else {
 				transmitButton.setText("Transmit");
 				if (st == null) return;
@@ -151,7 +151,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 			if (viewButton.getText().equals("View")) {
 				viewButton.setText("Stop");
 				try {
-					InetAddress addr = InetAddress.getByName(address);
+					InetAddress addr = InetAddress.getByName(ModelApplication.
+							getInstance().getServerAddress());
 					vt = new ViewTrack(addr, textView);
 					vt.execute();
 				} catch (UnknownHostException e) {
@@ -174,6 +175,7 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 	 */
 	class ConnectServer extends AsyncTask<Context, Void, String> {
 		private InetAddress addr;
+		private int serverPort = ModelApplication.getInstance().getServerPort();
 		
 		ConnectServer(InetAddress addr) {
 			Log.d("Task", "Making clinet " + counter);
@@ -192,7 +194,8 @@ public class MainActivity extends ActionBarActivity implements OnClickListener {
 		         System.err.println("Socket failed.");
 		    }
 			try {
-				String str = new String("Client " + login);
+				String str = new String("Client " + ModelApplication.
+						getInstance().getServerLogin());
 				DatagramPacket sendPacket = new DatagramPacket(str.getBytes(), str.length(), 
 						addr, serverPort);
 				// Отправка запроса-приветствия серверу
